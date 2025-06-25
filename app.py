@@ -74,6 +74,18 @@ MOTIVOS = [
 ]
 
 # ───────────────── VISTAS ──────────────────
+
+@app.route('/')
+def home():
+    return redirect(url_for('panel_jefe'))
+
+@app.route('/panel')
+def panel_jefe():
+    total_alertas = Alerta.query.filter_by(atendida=False).count()
+    por_tipo = db.session.query(Alerta.tipo, db.func.count(Alerta.id)).filter_by(atendida=False).group_by(Alerta.tipo).all()
+    total_justificaciones = JustificacionNoVenta.query.count()
+    return render_template('panel_jefe.html', total_alertas=total_alertas, por_tipo=por_tipo, total_justificaciones=total_justificaciones)
+
 @app.route('/alertas')
 def ver_alertas():
     hoy = datetime.now()

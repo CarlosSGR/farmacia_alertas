@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel del Jefe Virtual</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container py-5">
+    <h1 class="mb-5">📊 Panel del Jefe Virtual</h1>
+
+    <div class="row g-4">
+
+        <!-- Tarjeta de alertas -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="card-title">{{ total_alertas }}</h3>
+                    <p class="card-text">Alertas activas</p>
+                    <a href="{{ url_for('ver_alertas') }}" class="btn btn-primary w-100">Ver alertas</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detalle por tipo -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Alertas por tipo</h5>
+                    <ul class="list-group">
+                        {% for tipo, cnt in por_tipo %}
+                          <li class="list-group-item d-flex justify-content-between">
+                            {{ tipo }} <span class="badge bg-secondary">{{ cnt }}</span>
+                          </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Justificaciones -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="card-title">{{ total_justificaciones }}</h3>
+                    <p class="card-text">Justificaciones registradas</p>
+                    <a href="{{ url_for('ver_justificaciones') }}" class="btn btn-success w-100">Ver justificaciones</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>
