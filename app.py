@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+from sqlaclhemy import text
 from datetime import datetime, timedelta
 import os
 
@@ -132,14 +133,14 @@ def no_venta(alerta_id):
 @app.cli.command("migrar")
 def migrar():
     # Ensure legacy tables that are no longer required are removed
-    db.engine.execute("DROP TABLE IF EXISTS en_transito")
+    db.session.execute(text("DROP TABLE IF EXISTS en_transito"))
     db.create_all()
     print("✅ Tablas listas")
 
 @app.cli.command('insertar_dummy')
 def insertar_dummy():
     # Remove obsolete tables in case they exist
-    db.engine.execute("DROP TABLE IF EXISTS en_transito")
+    db.session.execute(text("DROP TABLE IF EXISTS en_transito"))
     db.drop_all()
     db.create_all()
 
