@@ -1,9 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
+import os
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///farmacia.db'
+app = Flask(__name__, instance_relative_config=True)
+os.makedirs(app.instance_path, exist_ok=True)
+db_path = os.path.join(app.instance_path, 'farmacia.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -128,11 +131,15 @@ def no_venta(alerta_id):
 
 @app.cli.command("migrar")
 def migrar():
+    # Ensure legacy tables that are no longer required are removed
+    db.engine.execute("DROP TABLE IF EXISTS en_transito")
     db.create_all()
     print("✅ Tablas listas")
 
 @app.cli.command('insertar_dummy')
 def insertar_dummy():
+    # Remove obsolete tables in case they exist
+    db.engine.execute("DROP TABLE IF EXISTS en_transito")
     db.drop_all()
     db.create_all()
 
@@ -161,56 +168,12 @@ def insertar_dummy():
     db.session.commit()
     print('✅ Datos dummy insertados')
 
+from utils.generar_alertas import generar_alertas
+
 @app.cli.command('generar_alertas')
-def generar_alertas():
-    hoy = datetime.now()
-    dias_semana = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo']
-
-    Alerta.query.delete()
-
-    for c in ClienteCronico.query.all():
-        prox = c.fecha_ultima_compra + timedelta(days=c.frecuencia_dias)
-        dias_rest = (prox - hoy.date()).days
-        if dias_rest <= 3:
-            med = Medicamento.query.get(c.medicamento_id)
-            stock = StockLocal.query.filter_by(medicamento_id=med.id, sucursal_id=c.sucursal_id).first()
-            prov = med.proveedor
-
-            db.session.add(Alerta(tipo='Cliente Crónico', mensaje=f'{c.nombre} necesita {med.nombre} en {dias_rest} días.', fecha_programada=hoy, sucursal_id=c.sucursal_id))
-
-            if not stock or stock.existencias < 1:
-                db.session.add(Alerta(tipo='Stock Bajo', mensaje=f'Stock insuficiente para {c.nombre} ({med.nombre}) en sucursal {c.sucursal_id}.', fecha_programada=hoy, sucursal_id=c.sucursal_id))
-
-            dia_actual = hoy.weekday()
-            dia_pedido = dias_semana.index(prov.dia_pedido_fijo)
-            dias_hasta_pedido = (dia_pedido - dia_actual) % 7
-            if dias_rest < dias_hasta_pedido + prov.dias_entrega:
-                db.session.add(Alerta(tipo='Riesgo Entrega', mensaje=f'No alcanza a llegar {med.nombre} para {c.nombre} (falta {dias_rest} días).', fecha_programada=hoy, sucursal_id=c.sucursal_id))
-
-    for prov in Proveedor.query.all():
-        if dias_semana[hoy.weekday()] == prov.dia_pedido_fijo:
-            marcado = PedidoMarcado.query.filter_by(proveedor_id=prov.id, fecha=hoy.date()).first()
-            if not marcado:
-                db.session.add(Alerta(tipo='Pedido No Marcado', mensaje=f'Hoy es día de pedido para {prov.nombre} y no se ha marcado como completado.', fecha_programada=hoy))
-
-    sesenta_dias = datetime.now().date() - timedelta(days=60)
-    ventas = db.session.query(Venta.medicamento_id, Venta.sucursal_id, db.func.max(Venta.fecha).label('ultima_venta'))\
-        .group_by(Venta.medicamento_id, Venta.sucursal_id).all()
-
-    for venta in ventas:
-        if venta.ultima_venta <= sesenta_dias:
-            medicamento = Medicamento.query.get(venta.medicamento_id)
-            alerta = Alerta(
-                tipo="Producto Emulado",
-                mensaje=f"{medicamento.nombre} no se ha vendido en más de 60 días en sucursal {venta.sucursal_id}.",
-                destinatario="administrador",
-                fecha_programada=datetime.now(),
-                sucursal_id=None
-            )
-            db.session.add(alerta)
-
-    db.session.commit()
-    print('✅ Alertas generadas')
+def generar_alertas_command():
+    """CLI que delega la generación de alertas a utils/generar_alertas.py."""
+    generar_alertas()
 
 
 @app.route('/justificaciones')
