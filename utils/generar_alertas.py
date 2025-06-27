@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 import click
 
-from app import app, db, Proveedor, Medicamento, StockLocal, ClienteCronico, PedidoMarcado, Alerta, Venta
 
 
 def generar_alertas():
     """Genera alertas según el estado actual de la base de datos."""
+    from app import app, db, Proveedor, Medicamento, StockLocal, ClienteCronico, PedidoMarcado, Alerta, Venta
     with app.app_context():
         hoy = datetime.now()
         dias_semana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
@@ -86,6 +86,7 @@ def generar_alertas():
 
 @click.command(help='Genera las alertas del sistema')
 def cli():
+    from app import app
     generar_alertas()
 
 
