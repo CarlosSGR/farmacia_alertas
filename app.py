@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
-from sqlaclhemy import text
+from sqlalchemy import text
 from datetime import datetime, timedelta
 import os
 
