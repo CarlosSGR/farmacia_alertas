@@ -78,3 +78,5 @@ Esto evaluará el estado actual de la base de datos y almacenará las alertas co
    ```
 
 The tests use an in-memory SQLite database and do not modify the existing data files.
+
+flask --app app run
