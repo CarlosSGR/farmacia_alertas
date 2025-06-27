@@ -1,0 +1,11 @@
+{% macro mensaje_random(id, mensajes) %}
+<div id="{{ id }}" class="alert alert-info mt-2"></div>
+<script>
+(function() {
+  const mensajes = {{ mensajes | tojson }};
+  const indice = Math.floor(Math.random() * mensajes.length);
+  const cont = document.getElementById('{{ id }}');
+  if (cont) cont.textContent = mensajes[indice];
+})();
+</script>
+{% endmacro %}

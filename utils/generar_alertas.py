@@ -26,7 +26,8 @@ def generar_alertas():
                     tipo='Cliente Crónico',
                     mensaje=f'{c.nombre} necesita {med.nombre} en {dias_rest} días.',
                     fecha_programada=hoy,
-                    sucursal_id=c.sucursal_id
+                    sucursal_id=c.sucursal_id,
+                    destinatario=c.nombre
                 ))
 
                 if not stock or stock.existencias < 1:

@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 from datetime import datetime, timedelta
+import re
 import os
 
 app = Flask(__name__, instance_relative_config=True)
@@ -110,6 +111,12 @@ def resolver_alerta(alerta_id):
 def alertas_sucursal(sucursal_id):
     hoy = datetime.now()
     alertas = Alerta.query.filter_by(sucursal_id=sucursal_id, atendida=False).filter(Alerta.fecha_programada<=hoy).all()
+    for a in alertas:
+        if a.tipo == 'Cliente Crónico':
+            m = re.search(r'necesita (.+?) en (\d+) d', a.mensaje)
+            if m:
+                a.medicamento = m.group(1)
+                a.dias_restantes = m.group(2)
     return render_template('alertas_sucursal.html', alertas=alertas, sucursal_id=sucursal_id, motivos=MOTIVOS)
 
 @app.route('/marcar_alerta/<int:alerta_id>', methods=['POST'])
