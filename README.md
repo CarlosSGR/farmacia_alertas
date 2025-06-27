@@ -18,6 +18,8 @@ running the application.
 ## Instalación
 
 Crea un entorno virtual e instala las dependencias:
+Crea un entorno virtual y luego instala los paquetes listados en
+`requirements.txt`:
 
 ```bash
 python -m venv venv
@@ -43,17 +45,7 @@ python utils/importar_excel.py
 
 También puedes indicar un archivo diferente:
 
-```bash
-python utils/importar_excel.py --file path/a/datos.xlsx
-```
-
-Las hojas esperadas son `proveedores`, `sucursales`, `medicamentos`, `stock`, `clientes_cronicos` y `ventas`.
-
-## Generar alertas
-
-El módulo `utils/generar_alertas.py` contiene la lógica para construir las alertas de negocio. Puedes ejecutarlo directamente:
-
-```bash
+@@ -57,26 +58,32 @@ El módulo `utils/generar_alertas.py` contiene la lógica para construir las ale
 python utils/generar_alertas.py
 ```
 
@@ -80,3 +72,10 @@ Esto evaluará el estado actual de la base de datos y almacenará las alertas co
 The tests use an in-memory SQLite database and do not modify the existing data files.
 
 flask --app app run
+## Ejecutar la aplicación
+
+Inicia el servidor de desarrollo con:
+
+```bash
+flask --app app run
+```
