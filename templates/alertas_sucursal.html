@@ -9,7 +9,19 @@
 <body class="bg-light">
 {% from 'mensaje_random_snippet.html' import mensaje_random %}
 <div class="container py-5">
-    <h1 class="mb-4">📍 Alertas para Sucursal #{{ sucursal_id }}</h1>
+    {% set nombres = {
+        1: 'Matriz',
+        2: 'Ampliacion',
+        3: 'Civil',
+        4: 'Curva Texas',
+        5: 'Ejercito',
+        6: 'Tampico'
+    } %}
+    {% if sucursal_id in nombres %}
+        <h1 class="mb-4">📍 Alertas para Sucursal {{ nombres[sucursal_id] }}</h1>
+    {% else %}
+        <h1 class="mb-4">📍 Alertas para Sucursal #{{ sucursal_id }}</h1>
+    {% endif %}
 
     {% if alertas %}
         <ul class="list-group mb-3">
