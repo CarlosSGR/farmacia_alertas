@@ -131,27 +131,27 @@ def alertas_sucursal(sucursal_id):
 
 @app.route('/alertas_sucursal_matriz')
 def alertas_sucursal_1():
-    return _render_alertas_sucursal(1, 'alertas_sucursal_matriz.html')
+    return _render_alertas_sucursal(1)
 
 @app.route('/alertas_sucursal_ampliacion')
 def alertas_sucursal_2():
-    return _render_alertas_sucursal(2, 'alertas_sucursal_ampliacion.html')
+    return _render_alertas_sucursal(2)
 
 @app.route('/alertas_sucursal_civil')
 def alertas_sucursal_3():
-    return _render_alertas_sucursal(3, 'alertas_sucursal_civil.html')
+    return _render_alertas_sucursal(3)
 
 @app.route('/alertas_sucursal_curva')
 def alertas_sucursal_4():
-    return _render_alertas_sucursal(4, 'alertas_sucursal_curva.html')
+    return _render_alertas_sucursal(4)
 
 @app.route('/alertas_sucursal_ejercito')
 def alertas_sucursal_5():
-    return _render_alertas_sucursal(5, 'alertas_sucursal_ejercito.html')
+    return _render_alertas_sucursal(5)
 
 @app.route('/alertas_sucursal_tampico')
 def alertas_sucursal_6():
-    return _render_alertas_sucursal(6, 'alertas_sucursal_tampico.html')
+    return _render_alertas_sucursal(6)
 
 @app.route('/marcar_alerta/<int:alerta_id>', methods=['POST'])
 def marcar_alerta(alerta_id):
