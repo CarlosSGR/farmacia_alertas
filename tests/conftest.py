@@ -1,4 +1,8 @@
+import os
+import sys
 import pytest
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from app import app, db
 
 @pytest.fixture
@@ -9,4 +13,4 @@ def client():
         db.create_all()
         yield app.test_client()
         db.session.remove()
-        db.drop_all()       
+        db.drop_all()

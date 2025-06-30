@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Alertas Sucursal</title>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+{% from 'mensaje_random_snippet.html' import mensaje_random %}
+<div class="container py-5">
+    <h1 class="mb-4">📍 Alertas para Sucursal Curva Texas</h1>
+
+    {% if alertas %}
+        <ul class="list-group mb-3">
+            {% for alerta in alertas %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        {{ alerta.mensaje }}<br>
+                        <small class="text-muted">
+                            {{ alerta.fecha_programada.strftime('%d/%m/%Y %H:%M') }}
+                        </small>
+                    </div>
+
+                    <!-- Botón para marcar como resuelta -->
+                    <form action="{{ url_for('marcar_alerta', alerta_id=alerta.id) }}"
+                          method="post" class="m-0">
+                        <button type="submit" class="btn btn-sm btn-success">✅</button>
+                    </form>
+                    <form action="{{ url_for('no_venta', alerta_id=alerta.id) }}" method="post" class="d-flex gap-2">
+                        <select name="motivo" class="form-select form-select-sm">
+                            {% for m in motivos %}
+                            <option value="{{ m }}">{{ m }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-danger">❌</button>
+                    </form>
+                    {% if alerta.destinatario and alerta.tipo == 'Cliente Cr\u00f3nico' %}
+                        <div class="w-100">
+                            {% set nombre = alerta.destinatario %}
+                            {% set med = alerta.medicamento %}
+                            {% set dias = alerta.dias_restantes %}
+                            {% set opciones = [
+                                'Hola ' ~ nombre ~ ', solo te recordamos que te toca reponer ' ~ med ~ ' en ' ~ dias ~ ' d\u00edas. \u00bfQuieres que te ayudemos a programar el pedido?',
+                                'Buen d\u00eda ' ~ nombre ~ '. Vimos que pronto necesitar\u00e1s ' ~ med ~ '. Av\u00edsanos si quieres que te lo tengamos listo.',
+                                '\u00a1Hola ' ~ nombre.split(' ')[0] ~ '! Sabemos que te toca reponer tu medicamento ' ~ med ~ ' pronto, \u00bfquieres que lo apartemos desde ahora?',
+                                nombre ~ ', tu tratamiento con ' ~ med ~ ' est\u00e1 por terminar. \u00bfQuieres asegurar tu siguiente dosis a tiempo?'
+                            ] %}
+                            {{ mensaje_random('msg-' ~ alerta.id, opciones) }}
+                        </div>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="alert alert-success">
+            No hay alertas activas para esta sucursal ✅
+        </div>
+    {% endif %}
+</div>
+</body>
+</html>
