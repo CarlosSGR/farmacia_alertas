@@ -191,52 +191,54 @@ def ver_justificaciones():
 
 @app.route('/contactos_hoy')
 def contactos_hoy():
-    """Página de ejemplo con los clientes que se deben contactar."""
+    """Muestra clientes a contactar basados en las alertas activas."""
     fecha = datetime.now().strftime('%d/%m/%Y')
-    resumen = {
-        'Urgente': 2,
-        'Prioritario': 1,
-        'Rutinario': 1,
-        'Potencial': '$5,000'
-    }
+    hoy = datetime.now()
+
+    alertas = (
+        Alerta.query
+        .filter_by(tipo='Cliente Crónico', atendida=False)
+        .filter(Alerta.fecha_programada <= hoy)
+        .all()
+    )
+
     clientes = {
-        'Urgente': [
-            {
-                'nombre': 'Juan Pérez',
-                'telefono': '5512345678',
-                'direccion': 'Av. Siempre Viva 123',
-                'tipo': 'Crítico',
-                'mensaje': 'Hola Juan, te recordamos que tu medicamento vence pronto.'
-            },
-            {
-                'nombre': 'Ana Gómez',
-                'telefono': '5523456789',
-                'direccion': 'Calle Falsa 456',
-                'tipo': 'Crítico',
-                'mensaje': 'Ana, tenemos disponible tu tratamiento. ¿Agendamos tu compra?'
-            }
-        ],
-        'Prioritario': [
-            {
-                'nombre': 'Luis Martínez',
-                'telefono': '5534567890',
-                'direccion': 'Av. Libertad 789',
-                'tipo': 'Mensual',
-                'mensaje': 'Luis, te contactamos para confirmar tu reposición mensual.'
-            }
-        ],
-        'Rutinario': [
-            {
-                'nombre': 'Carla Ruiz',
-                'telefono': '5545678901',
-                'direccion': 'Calle Central 321',
-                'tipo': 'Mensual',
-                'mensaje': 'Carla, no olvides tu medicamento programado para esta semana.'
-            }
-        ]
+        'Urgente': [],
+        'Prioritario': [],
+        'Rutinario': []
     }
+
+    for alerta in alertas:
+        dias = 0
+        medicamento = ''
+        m = re.search(r'necesita (.+?) en (\d+) d', alerta.mensaje)
+        if m:
+            medicamento = m.group(1)
+            dias = int(m.group(2))
+
+        if dias <= 0:
+            categoria = 'Urgente'
+        elif dias <= 2:
+            categoria = 'Prioritario'
+        else:
+            categoria = 'Rutinario'
+
+        suc = Sucursal.query.get(alerta.sucursal_id)
+        clientes[categoria].append({
+            'nombre': alerta.destinatario or 'Cliente',
+            'telefono': 'N/A',
+            'direccion': suc.nombre if suc else 'Desconocido',
+            'tipo': medicamento or 'Medicamento',
+            'mensaje': alerta.mensaje
+        })
+
+    resumen = {
+        cat: len(lista) for cat, lista in clientes.items()
+    }
+    resumen['Potencial'] = f"${len(alertas) * 1000:,}".replace(',', ',')
+
     return render_template('contactos_hoy.html', fecha=fecha, resumen=resumen, clientes=clientes)
 
-    
+
 if __name__ == '__main__':
     app.run(debug=True)
