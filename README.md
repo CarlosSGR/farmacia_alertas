@@ -22,7 +22,7 @@ Crea un entorno virtual y luego instala los paquetes listados en
 
 ```bash
 python -m venv venv
-source venv/bin/activate
+source venv/Scripts/activate
 pip install -r requirements.txt
 ```
 
@@ -39,12 +39,22 @@ flask --app app migrar
 El script `utils/importar_excel.py` lee un archivo de Excel con varias hojas y carga la información en la base de datos. Por defecto usa `data/dummy_data.xlsx`.
 
 ```bash
-python utils/importar_excel.py
+flask insertar_dummy
 ```
 
 También puedes indicar un archivo diferente:
 
-@@ -57,26 +58,32 @@ El módulo `utils/generar_alertas.py` contiene la lógica para construir las ale
+```bash
+python utils/importar_excel.py --file path/a/datos.xlsx
+```
+
+Las hojas esperadas son `proveedores`, `sucursales`, `medicamentos`, `stock`, `clientes_cronicos` y `ventas`.
+
+## Generar alertas
+
+El módulo `utils/generar_alertas.py` contiene la lógica para construir las alertas de negocio. Puedes ejecutarlo directamente:
+
+```bash
 python utils/generar_alertas.py
 ```
 

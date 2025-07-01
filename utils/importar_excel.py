@@ -80,4 +80,5 @@ def cli(path):
 
 
 if __name__ == "__main__":
-    cli()   
+    cli()
+    
