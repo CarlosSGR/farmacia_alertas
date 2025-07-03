@@ -18,14 +18,10 @@ def importar_excel(path: str = "data/dummy_data.xlsx"):
         if "proveedores" in xls.sheet_names:
             df = pd.read_excel(xls, "proveedores")
             for _, row in df.iterrows():
-                dias_val = row.get("dias_entrega")
-                if pd.isna(dias_val):
-                    print("Proveedor omitido", row.to_dict())
-                    continue
                 db.session.add(Proveedor(
                     nombre=row["nombre"],
                     dia_pedido_fijo=row["dia_pedido_fijo"],
-                    dias_entrega=int(dias_val)
+                    dias_entrega=int(row["dias_entrega"])
                 ))
 
         if "sucursales" in xls.sheet_names:

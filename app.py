@@ -187,8 +187,14 @@ def insertar_dummy():
 
     # Utilizar el script de importación existente para cargar todos los datos
     from utils.importar_excel import importar_excel
-    importar_excel("data/dummy_data.xlsx")
-    print('✅ Datos dummy insertados')
+    try:
+        importar_excel("data/dummy_data.xlsx")
+    except Exception as exc:
+        db.session.rollback()
+        print(f"❌ Error al importar datos: {exc}")
+        raise
+    else:
+        print('✅ Datos dummy insertados')
 
 from utils.generar_alertas import generar_alertas
 
