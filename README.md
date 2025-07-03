@@ -88,3 +88,16 @@ Inicia el servidor de desarrollo con:
 ```bash
 flask --app app run
 ```
+
+## Para actualizar la base de datos constantemente
+
+En un periodo determinado anteriormente ya sea diario semanal etc. Lo que debe hacerse es lo siguiente:
+
+En la hoja de Excel dummy_data deberá ya sea registrarse o actualizarse en la hoja de clientes_cronicos el cliente a tratar. 
+En caso de actualizar deberá actualizarse principalmente la fecha de la última compra MUY IMPORTANTE. (En caso de que sea necesario se deberá cambiar también el código de medicamento/frecuencia_dias/sucursal_id)
+
+Una vez hecho deberá seguirse el proceso determinado anteriormente para 
+
+1. Migrar
+2. Insertar la tabla (Osea el excel)
+3. Generar las alertas

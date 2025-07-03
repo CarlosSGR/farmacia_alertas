@@ -180,34 +180,14 @@ def migrar():
 
 @app.cli.command('insertar_dummy')
 def insertar_dummy():
-    # Remove obsolete tables in case they exist
+    """Carga la base de datos con la información de ``data/dummy_data.xlsx``."""
     db.session.execute(text("DROP TABLE IF EXISTS en_transito"))
     db.drop_all()
     db.create_all()
 
-    prov = Proveedor(nombre='LEVIC', dia_pedido_fijo='Martes', dias_entrega=3)
-    suc1 = Sucursal(nombre='Matriz')
-    suc2 = Sucursal(nombre='Sucursal Norte')
-    med = Medicamento(nombre='Trayenta', proveedor=prov)
-
-    db.session.add_all([prov, suc1, suc2, med])
-    db.session.commit()
-
-    db.session.add_all([
-        StockLocal(medicamento_id=med.id, sucursal_id=suc1.id, existencias=2),
-        StockLocal(medicamento_id=med.id, sucursal_id=suc2.id, existencias=1)
-    ])
-
-    hoy = datetime.now().date()
-    db.session.add_all([
-        ClienteCronico(nombre='Juan Pérez', medicamento_id=med.id, sucursal_id=suc1.id, frecuencia_dias=30, fecha_ultima_compra=hoy - timedelta(days=27)),
-        ClienteCronico(nombre='Ana Gómez', medicamento_id=med.id, sucursal_id= suc2.id, frecuencia_dias=30, fecha_ultima_compra=hoy - timedelta(days=28))
-    ])
-
-    venta_antigua = Venta(medicamento_id=med.id, sucursal_id=suc1.id, fecha=hoy - timedelta(days=61))
-    db.session.add(venta_antigua)
-
-    db.session.commit()
+    # Utilizar el script de importación existente para cargar todos los datos
+    from utils.importar_excel import importar_excel
+    importar_excel("data/dummy_data.xlsx")
     print('✅ Datos dummy insertados')
 
 from utils.generar_alertas import generar_alertas

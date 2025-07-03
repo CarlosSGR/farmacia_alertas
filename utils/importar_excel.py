@@ -18,10 +18,14 @@ def importar_excel(path: str = "data/dummy_data.xlsx"):
         if "proveedores" in xls.sheet_names:
             df = pd.read_excel(xls, "proveedores")
             for _, row in df.iterrows():
+                dias_val = row.get("dias_entrega")
+                if pd.isna(dias_val):
+                    print("Proveedor omitido", row.to_dict())
+                    continue
                 db.session.add(Proveedor(
                     nombre=row["nombre"],
                     dia_pedido_fijo=row["dia_pedido_fijo"],
-                    dias_entrega=int(row["dias_entrega"])
+                    dias_entrega=int(dias_val)
                 ))
 
         if "sucursales" in xls.sheet_names:
@@ -29,31 +33,47 @@ def importar_excel(path: str = "data/dummy_data.xlsx"):
             for _, row in df.iterrows():
                 db.session.add(Sucursal(nombre=row["nombre"]))
 
+        meds_map = {}
         if "medicamentos" in xls.sheet_names:
             df = pd.read_excel(xls, "medicamentos")
             for _, row in df.iterrows():
-                db.session.add(Medicamento(
-                    nombre=row["nombre"],
+                med = Medicamento(
+                    nombre=row["descripcion"],
                     proveedor_id=int(row["proveedor_id"])
-                ))
+                )
+                db.session.add(med)
+                db.session.flush()  # asigna id sin esperar al commit
+                meds_map[str(row["codigo"])] = med.id
 
         if "stock" in xls.sheet_names:
             df = pd.read_excel(xls, "stock")
             for _, row in df.iterrows():
+                code = str(row.get("codigo") or row.get("codigo_medicamento"))
+                med_id = meds_map.get(code)
+                suc_id = row.get("sucursal_id")
+                if med_id is None or pd.isna(suc_id):
+                    print(f"Fila de stock omitida: {row.to_dict()}")
+                    continue
                 db.session.add(StockLocal(
-                    medicamento_id=int(row["medicamento_id"]),
-                    sucursal_id=int(row["sucursal_id"]),
+                    medicamento_id=int(med_id),
+                    sucursal_id=int(suc_id),
                     existencias=int(row["existencias"])
                 ))
 
         if "clientes_cronicos" in xls.sheet_names:
             df = pd.read_excel(xls, "clientes_cronicos")
             for _, row in df.iterrows():
+                code = str(row.get("codigo") or row.get("codigo_medicamento"))
+                med_id = meds_map.get(code)
+                suc_id = row.get("sucursal_id")
+                if med_id is None or pd.isna(suc_id):
+                    print(f"Fila cr\xf3nico omitida: {row.to_dict()}")
+                    continue
                 fecha = pd.to_datetime(row["fecha_ultima_compra"]).date()
                 db.session.add(ClienteCronico(
                     nombre=row["nombre"],
-                    medicamento_id=int(row["medicamento_id"]),
-                    sucursal_id=int(row["sucursal_id"]),
+                    medicamento_id=int(med_id),
+                    sucursal_id=int(suc_id),
                     frecuencia_dias=int(row["frecuencia_dias"]),
                     fecha_ultima_compra=fecha
                 ))
@@ -61,10 +81,16 @@ def importar_excel(path: str = "data/dummy_data.xlsx"):
         if "ventas" in xls.sheet_names:
             df = pd.read_excel(xls, "ventas")
             for _, row in df.iterrows():
+                code = str(row.get("codigo") or row.get("codigo_medicamento"))
+                med_id = meds_map.get(code)
+                suc_id = row.get("sucursal_id")
+                if med_id is None or pd.isna(suc_id):
+                    print(f"Fila venta omitida: {row.to_dict()}")
+                    continue
                 fecha = pd.to_datetime(row["fecha"]).date()
                 db.session.add(Venta(
-                    medicamento_id=int(row["medicamento_id"]),
-                    sucursal_id=int(row["sucursal_id"]),
+                    medicamento_id=int(med_id),
+                    sucursal_id=int(suc_id),
                     fecha=fecha
                 ))
 
@@ -80,5 +106,4 @@ def cli(path):
 
 
 if __name__ == "__main__":
-    cli()
-    
+    cli()   

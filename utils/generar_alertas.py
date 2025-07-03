@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 import click
-
+from app import app, db
 
 
 def generar_alertas():
