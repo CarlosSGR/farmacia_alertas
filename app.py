@@ -118,10 +118,13 @@ def _render_alertas_sucursal(sucursal_id: int, template: str = "alertas_sucursal
     )
     for a in alertas:
         if a.tipo == 'Cliente Cr\xf3nico':
-            m = re.search(r'necesita (.+?) en (\d+) d', a.mensaje)
+            m = re.search(r"necesita\s+(.+?)\s+en\s+(\d+)\s+d", a.mensaje, re.IGNORECASE)
             if m:
                 a.medicamento = m.group(1)
                 a.dias_restantes = m.group(2)
+            else:
+                a.medicamento = ""
+                a.dias_restantes = None
     return render_template(template, alertas=alertas, sucursal_id=sucursal_id, motivos=MOTIVOS)
 
 

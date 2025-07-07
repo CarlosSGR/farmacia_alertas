@@ -10,12 +10,12 @@
 {% from 'mensaje_random_snippet.html' import mensaje_random %}
 <div class="container py-5">
     {% set nombres = {
-        1: 'Matriz',
-        2: 'Ampliacion',
-        3: 'Civil',
-        4: 'Curva Texas',
+        1: 'Ampliación',
+        2: 'Tampico',
+        3: 'Curva Texas',
+        4: 'Matriz',
         5: 'Ejercito',
-        6: 'Tampico'
+        6: 'Civil'
     } %}
     {% if sucursal_id in nombres %}
         <h1 class="mb-4">📍 Alertas para Sucursal {{ nombres[sucursal_id] }}</h1>
@@ -52,6 +52,7 @@
                             {% set nombre = alerta.destinatario %}
                             {% set med = alerta.medicamento %}
                             {% set dias = alerta.dias_restantes %}
+                            
                             {% set opciones = [
                                 'Hola ' ~ nombre ~ ', solo te recordamos que te toca reponer ' ~ med ~ ' en ' ~ dias ~ ' d\u00edas. \u00bfQuieres que te ayudemos a programar el pedido?',
                                 'Buen d\u00eda ' ~ nombre ~ '. Vimos que pronto necesitar\u00e1s ' ~ med ~ '. Av\u00edsanos si quieres que te lo tengamos listo.',
