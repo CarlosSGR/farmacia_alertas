@@ -5,43 +5,47 @@ from app import app, db
 
 
 def generar_alertas():
-    """Genera alertas según el estado actual de la base de datos."""
-    """Genera alertas de clientes crónicos próximas a vencer."""
     from app import Medicamento, ClienteCronico, Alerta, Venta
     with app.app_context():
         hoy = datetime.now().date()
+        ventana = [hoy + timedelta(days=i) for i in range(0, 4)]  # hoy + 3 días
 
-        # Limpiar alertas existentes
+        # limpia alertas viejas
         Alerta.query.delete()
 
-        # Clientes crónicos próximos a comprar según la venta del mes pasado
-        for c in ClienteCronico.query.all():
-            prox = c.fecha_ultima_compra + relativedelta(months=1)
-            dias_rest = (prox - hoy).days
-            if 0 <= dias_rest <= 3:
-                # Verificar si ya existe una venta para esta fecha
-                venta = (
-                    Venta.query
-                    .filter_by(medicamento_id=c.medicamento_id, sucursal_id=c.sucursal_id)
-                    .filter(Venta.fecha == prox)
-                    .first()
-                )
-                if venta:
-                    continue
+        for dia_actual in ventana:
+            dia_pasado = dia_actual - relativedelta(months=1)
 
-                med = Medicamento.query.get(c.medicamento_id)
-                db.session.add(
-                    Alerta(
-                        tipo='Cliente Crónico',
-                        mensaje=f'{c.nombre} necesita {med.nombre} en {dias_rest} días.',
-                        fecha_programada=datetime.now(),
-                        sucursal_id=c.sucursal_id,
-                        destinatario=c.nombre,
-                    )
-                )
+            # Todas las ventas del mismo día del mes pasado
+            ventas_pasadas = Venta.query.filter(Venta.fecha == dia_pasado).all()
+
+            for v in ventas_pasadas:
+                # ¿El mismo cliente ya compró el mismo día de este mes?
+                ya_compro = Venta.query.filter_by(
+                    cliente_id=v.cliente_id,
+                    medicamento_id=v.medicamento_id,
+                    sucursal_id=v.sucursal_id,
+                    fecha=dia_actual
+                ).first()
+
+                if ya_compro:
+                    continue  # no alertar, compra realizada
+
+                cliente = ClienteCronico.query.get(v.cliente_id)
+                med     = Medicamento.query.get(v.medicamento_id)
+                dias_rest = (dia_actual - hoy).days
+
+                db.session.add(Alerta(
+                    tipo="Cliente Crónico",
+                    mensaje=f"{cliente.nombre} compró {med.nombre} el {dia_pasado:%d/%m}. Faltan {dias_rest} días y aún no repite la compra.",
+                    fecha_programada=datetime.now(),
+                    sucursal_id=v.sucursal_id,
+                    destinatario=cliente.nombre
+                ))
 
         db.session.commit()
-        print('\u2705 Alertas generadas')
+        print("✅ Alertas generadas con regla de mes-pasado")
+
 
 
 @click.command(help='Genera las alertas del sistema')

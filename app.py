@@ -60,6 +60,7 @@ class PedidoMarcado(db.Model):
 
 class Venta(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    cliente_id = db.Column(db.Integer, db.ForeignKey('cliente_cronico.id'), nullable=False)
     medicamento_id = db.Column(db.Integer, db.ForeignKey('medicamento.id'), nullable=False)
     sucursal_id = db.Column(db.Integer, db.ForeignKey('sucursal.id'), nullable=False)
     fecha = db.Column(db.Date, nullable=False)

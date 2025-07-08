@@ -100,17 +100,14 @@ def importar_excel(path: str = "data/dummy_data.xlsx"):
         if "ventas" in xls.sheet_names:
             df = _read("ventas")
             for _, row in df.iterrows():
-                code = _code(row.get("codigo") or row.get("codigo_medicamento"))
-                med_id = meds_map.get(code)
-                suc_id = row.get("sucursal_id")
-                if med_id is None or pd.isna(suc_id):
-                    print(f"Fila venta omitida: {row.to_dict()}")
+                med_id = meds_map.get(_code(row["codigo"]))
+                if pd.isna(row["cliente_id"]) or med_id is None:
                     continue
-                fecha = pd.to_datetime(row["fecha"]).date()
                 db.session.add(Venta(
+                    cliente_id=int(row["cliente_id"]),
                     medicamento_id=int(med_id),
-                    sucursal_id=int(suc_id),
-                    fecha=fecha
+                    sucursal_id=int(row["sucursal_id"]),
+                    fecha=pd.to_datetime(row["fecha"]).date()
                 ))
 
         db.session.commit()
