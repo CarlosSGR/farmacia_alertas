@@ -33,9 +33,10 @@ def importar_excel(path: str = "data/dummy_data.xlsx"):
         if "medicamentos" in xls.sheet_names:
             df = pd.read_excel(xls, "medicamentos")
             for _, row in df.iterrows():
+                prov = row.get("proveedor_id")
                 med = Medicamento(
-                    nombre=row["descripcion"],
-                    proveedor_id=int(row["proveedor_id"])
+                    nombre=row.get("descripcion") or row.get("nombre"),
+                    proveedor_id=int(prov) if prov is not None and not pd.isna(prov) else None
                 )
                 db.session.add(med)
                 db.session.flush()  # asigna id sin esperar al commit

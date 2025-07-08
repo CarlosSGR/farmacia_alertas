@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 from utils.importar_excel import importar_excel
-from app import db, Proveedor
+from app import db, Proveedor, Medicamento
 
 
 def test_importar_excel_raises_on_missing_dias_entrega(tmp_path, client):
@@ -21,3 +21,16 @@ def test_importar_excel_raises_on_missing_dias_entrega(tmp_path, client):
         db.session.rollback()
         nombres = [p.nombre for p in Proveedor.query.all()]
         assert nombres == []
+
+
+def test_importar_medicamentos_without_proveedor_id(tmp_path, client):
+    xls_path = tmp_path / 'data.xlsx'
+    meds = pd.DataFrame({'codigo': [1, 2], 'descripcion': ['A', 'B']})
+    with pd.ExcelWriter(xls_path) as writer:
+        meds.to_excel(writer, sheet_name='medicamentos', index=False)
+
+    importar_excel(str(xls_path))
+
+    with client.application.app_context():
+        nombres = [m.nombre for m in db.session.query(Medicamento).all()]
+        assert nombres == ['A', 'B']
