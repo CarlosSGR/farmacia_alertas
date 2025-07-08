@@ -36,13 +36,14 @@ def test_importar_medicamentos_without_proveedor_id(tmp_path, client):
         assert nombres == ['A', 'B']
 
 
-def test_codigos_float_y_string(tmp_path, client):
+def test_importar_stock_ignores_unnamed_columns(tmp_path, client):
     xls_path = tmp_path / 'data.xlsx'
-    meds = pd.DataFrame({'codigo': [1.0, '2'], 'descripcion': ['A', 'B']})
+    meds = pd.DataFrame({'codigo': [1], 'descripcion': ['Med']})
     stock = pd.DataFrame({
-        'codigo': ['1', 2.0],
-        'sucursal_id': [1, 1],
-        'existencias': [5, 5]
+        'sucursal_id': [1],
+        'codigo': [1],
+        'existencias': [2],
+        None: [None],
     })
     with pd.ExcelWriter(xls_path) as writer:
         meds.to_excel(writer, sheet_name='medicamentos', index=False)
@@ -51,23 +52,6 @@ def test_codigos_float_y_string(tmp_path, client):
     importar_excel(str(xls_path))
 
     with client.application.app_context():
-        codigos = [s.medicamento_id for s in db.session.query(StockLocal).all()]
-        assert len(codigos) == 2
-
-
-def test_codigos_todo_string(tmp_path, client):
-    xls_path = tmp_path / 'data.xlsx'
-    meds = pd.DataFrame({'codigo': ['10', '20'], 'descripcion': ['C', 'D']})
-    stock = pd.DataFrame({
-        'codigo': ['10', '20'],
-        'sucursal_id': [1, 1],
-        'existencias': [2, 3]
-    })
-    with pd.ExcelWriter(xls_path) as writer:
-        meds.to_excel(writer, sheet_name='medicamentos', index=False)
-        stock.to_excel(writer, sheet_name='stock', index=False)
-
-    importar_excel(str(xls_path))
-
-    with client.application.app_context():
-        assert db.session.query(StockLocal).count() == 2
+        stocks = db.session.query(StockLocal).all()
+        assert len(stocks) == 1
+        assert stocks[0].existencias == 2

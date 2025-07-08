@@ -23,8 +23,13 @@ def importar_excel(path: str = "data/dummy_data.xlsx"):
         db.create_all()
         xls = pd.ExcelFile(file)
 
+        def _read(sheet: str):
+            df = pd.read_excel(xls, sheet)
+            df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+            return df
+
         if "proveedores" in xls.sheet_names:
-            df = pd.read_excel(xls, "proveedores")
+            df = _read("proveedores")
             for _, row in df.iterrows():
                 db.session.add(Proveedor(
                     nombre=row["nombre"],
@@ -33,13 +38,13 @@ def importar_excel(path: str = "data/dummy_data.xlsx"):
                 ))
 
         if "sucursales" in xls.sheet_names:
-            df = pd.read_excel(xls, "sucursales")
+            df = _read("sucursales")
             for _, row in df.iterrows():
                 db.session.add(Sucursal(nombre=row["nombre"]))
 
         meds_map = {}
         if "medicamentos" in xls.sheet_names:
-            df = pd.read_excel(xls, "medicamentos", dtype={"codigo": str})
+            df = _read("medicamentos")
             for _, row in df.iterrows():
                 prov = row.get("proveedor_id")
                 med = Medicamento(
@@ -51,7 +56,7 @@ def importar_excel(path: str = "data/dummy_data.xlsx"):
                 meds_map[_norm_code(row["codigo"])] = med.id
 
         if "stock" in xls.sheet_names:
-            df = pd.read_excel(xls, "stock", dtype={"codigo": str})
+            df = _read("stock")
             for _, row in df.iterrows():
                 code = _norm_code(row.get("codigo") or row.get("codigo_medicamento"))
                 med_id = meds_map.get(code)
@@ -66,7 +71,7 @@ def importar_excel(path: str = "data/dummy_data.xlsx"):
                 ))
 
         if "clientes_cronicos" in xls.sheet_names:
-            df = pd.read_excel(xls, "clientes_cronicos", dtype={"codigo": str})
+            df = _read("clientes_cronicos")
             for _, row in df.iterrows():
                 code = _norm_code(row.get("codigo") or row.get("codigo_medicamento"))
                 med_id = meds_map.get(code)
@@ -84,7 +89,7 @@ def importar_excel(path: str = "data/dummy_data.xlsx"):
                 ))
 
         if "ventas" in xls.sheet_names:
-            df = pd.read_excel(xls, "ventas", dtype={"codigo": str})
+            df = _read("ventas")
             for _, row in df.iterrows():
                 code = _norm_code(row.get("codigo") or row.get("codigo_medicamento"))
                 med_id = meds_map.get(code)
