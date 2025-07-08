@@ -23,10 +23,19 @@ def importar_excel(path: str = "data/dummy_data.xlsx"):
         db.create_all()
         xls = pd.ExcelFile(file)
 
+        
         def _read(sheet: str):
             df = pd.read_excel(xls, sheet)
             df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
             return df
+
+        def _code(val) -> str:
+            if pd.isna(val):
+                return ""
+            s = str(val).strip()
+            if s.endswith(".0"):
+                s = s[:-2]
+            return s
 
         if "proveedores" in xls.sheet_names:
             df = _read("proveedores")
@@ -53,12 +62,12 @@ def importar_excel(path: str = "data/dummy_data.xlsx"):
                 )
                 db.session.add(med)
                 db.session.flush()  # asigna id sin esperar al commit
-                meds_map[_norm_code(row["codigo"])] = med.id
+                meds_map[_code(row.get("codigo"))] = med.id
 
         if "stock" in xls.sheet_names:
             df = _read("stock")
             for _, row in df.iterrows():
-                code = _norm_code(row.get("codigo") or row.get("codigo_medicamento"))
+                code = _code(row.get("codigo") or row.get("codigo_medicamento"))
                 med_id = meds_map.get(code)
                 suc_id = row.get("sucursal_id")
                 if med_id is None or pd.isna(suc_id):
@@ -73,7 +82,7 @@ def importar_excel(path: str = "data/dummy_data.xlsx"):
         if "clientes_cronicos" in xls.sheet_names:
             df = _read("clientes_cronicos")
             for _, row in df.iterrows():
-                code = _norm_code(row.get("codigo") or row.get("codigo_medicamento"))
+                code = _code(row.get("codigo") or row.get("codigo_medicamento"))
                 med_id = meds_map.get(code)
                 suc_id = row.get("sucursal_id")
                 if med_id is None or pd.isna(suc_id):
@@ -91,7 +100,7 @@ def importar_excel(path: str = "data/dummy_data.xlsx"):
         if "ventas" in xls.sheet_names:
             df = _read("ventas")
             for _, row in df.iterrows():
-                code = _norm_code(row.get("codigo") or row.get("codigo_medicamento"))
+                code = _code(row.get("codigo") or row.get("codigo_medicamento"))
                 med_id = meds_map.get(code)
                 suc_id = row.get("sucursal_id")
                 if med_id is None or pd.isna(suc_id):

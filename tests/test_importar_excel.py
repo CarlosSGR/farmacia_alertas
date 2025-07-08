@@ -55,3 +55,19 @@ def test_importar_stock_ignores_unnamed_columns(tmp_path, client):
         stocks = db.session.query(StockLocal).all()
         assert len(stocks) == 1
         assert stocks[0].existencias == 2
+
+
+def test_importar_stock_numeric_codes(tmp_path, client):
+    xls_path = tmp_path / 'data.xlsx'
+    meds = pd.DataFrame({'codigo': [51004.0], 'descripcion': ['Med']})
+    stock = pd.DataFrame({'sucursal_id': [1], 'codigo': [51004], 'existencias': [2]})
+    with pd.ExcelWriter(xls_path) as writer:
+        meds.to_excel(writer, sheet_name='medicamentos', index=False)
+        stock.to_excel(writer, sheet_name='stock', index=False)
+
+    importar_excel(str(xls_path))
+
+    with client.application.app_context():
+        rows = db.session.query(StockLocal).all()
+        assert len(rows) == 1
+        assert rows[0].existencias == 2
