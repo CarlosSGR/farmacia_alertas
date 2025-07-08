@@ -33,9 +33,10 @@ def test_generar_alertas_compara_mes_pasado(client):
         db.session.add_all([c1, c2])
         db.session.commit()
 
-        # Registrar la compra de Ana para el mes actual
+        # Registrar la compra de Ana para la fecha esperada
         db.session.add(
             Venta(
+                cliente_id=c2.id,
                 medicamento_id=med.id,
                 sucursal_id=1,
                 fecha=datetime.now().date(),
@@ -49,3 +50,4 @@ def test_generar_alertas_compara_mes_pasado(client):
         assert len(alertas) == 1
         assert alertas[0].tipo == "Cliente Cr\xf3nico"
         assert "Juan" in alertas[0].mensaje
+        assert "necesita" in alertas[0].mensaje
