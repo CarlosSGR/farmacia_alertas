@@ -52,7 +52,8 @@ Las hojas esperadas son `proveedores`, `sucursales`, `medicamentos`, `stock`, `c
 
 ## Generar alertas
 
-El módulo `utils/generar_alertas.py` contiene la lógica para construir las alertas de negocio. Puedes ejecutarlo directamente:
+El módulo `utils/generar_alertas.py` contiene la lógica para construir las alertas de negocio. Ahora solamente se generan avisos de tipo **Cliente Crónico**, los cuales se crean cuando la siguiente compra prevista para un cliente está a 0–3 días de distancia.
+Puedes ejecutarlo directamente:
 
 ```bash
 python utils/generar_alertas.py
