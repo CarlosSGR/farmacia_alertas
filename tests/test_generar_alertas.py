@@ -1,34 +1,51 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+
+from dateutil.relativedelta import relativedelta
 
 from utils.generar_alertas import generar_alertas
-from app import db, Medicamento, ClienteCronico, Alerta
+from app import db, Medicamento, ClienteCronico, Venta, Alerta
 
-def test_generar_alertas_cronicos(client):
+
+def test_generar_alertas_compara_mes_pasado(client):
     with client.application.app_context():
-        med = Medicamento(nombre='Ibuprofeno')
+        med = Medicamento(nombre="Ibuprofeno")
         db.session.add(med)
         db.session.commit()
 
+        fecha_prev = (datetime.now() - relativedelta(months=1)).date()
+
         c1 = ClienteCronico(
-            nombre='Juan',
+            nombre="Juan",
             medicamento_id=med.id,
             sucursal_id=1,
             frecuencia_dias=30,
-            fecha_ultima_compra=datetime.now().date() - timedelta(days=28)
+            fecha_ultima_compra=fecha_prev,
         )
+
         c2 = ClienteCronico(
-            nombre='Ana',
+            nombre="Ana",
             medicamento_id=med.id,
             sucursal_id=1,
             frecuencia_dias=30,
-            fecha_ultima_compra=datetime.now().date() - timedelta(days=20)
+            fecha_ultima_compra=fecha_prev,
         )
+
         db.session.add_all([c1, c2])
+        db.session.commit()
+
+        # Registrar la compra de Ana para el mes actual
+        db.session.add(
+            Venta(
+                medicamento_id=med.id,
+                sucursal_id=1,
+                fecha=datetime.now().date(),
+            )
+        )
         db.session.commit()
 
         generar_alertas()
 
         alertas = Alerta.query.all()
         assert len(alertas) == 1
-        assert alertas[0].tipo == 'Cliente Cr\xf3nico'
-        assert 'Juan' in alertas[0].mensaje
+        assert alertas[0].tipo == "Cliente Cr\xf3nico"
+        assert "Juan" in alertas[0].mensaje
