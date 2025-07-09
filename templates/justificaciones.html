@@ -7,14 +7,19 @@
 </head>
 <body class="container py-5">
     <h1>📄 Justificaciones registradas</h1>
-    <ul class="list-group">
-        {% for j in registros %}
-            <li class="list-group-item">
-                Alerta ID: {{ j.alerta_id }} <br>
-                Motivo: {{ j.motivo }} <br>
-                Fecha: {{ j.fecha.strftime('%d/%m/%Y %H:%M') }}
-            </li>
-        {% endfor %}
-    </ul>
+    {% for motivo, lista in registros.items() %}
+        <details class="mb-3">
+            <summary>{{ motivo }} ({{ lista|length }})</summary>
+            <ul class="list-group mt-2">
+                {% for j in lista %}
+                    <li class="list-group-item">
+                        Alerta ID: {{ j.alerta_id }} <br>
+                        Motivo: {{ j.motivo }} <br>
+                        Fecha: {{ j.fecha.strftime('%d/%m/%Y %H:%M') }}
+                    </li>
+                {% endfor %}
+            </ul>
+        </details>
+    {% endfor %}
 </body>
 </html>

@@ -122,10 +122,12 @@ def _render_alertas_sucursal(sucursal_id: int, template: str = "alertas_sucursal
             m = re.search(r"necesita\s+(.+?)\s+en\s+(\d+)\s+d", a.mensaje, re.IGNORECASE)
             if m:
                 a.medicamento = m.group(1)
-                a.dias_restantes = m.group(2)
+                a.dias_restantes = int(m.group(2))
             else:
                 a.medicamento = ""
                 a.dias_restantes = None
+
+    alertas.sort(key=lambda a: a.dias_restantes if isinstance(a.dias_restantes, int) else 9999)
     return render_template(template, alertas=alertas, sucursal_id=sucursal_id, motivos=MOTIVOS)
 
 
@@ -210,7 +212,11 @@ def generar_alertas_command():
 
 @app.route('/justificaciones')
 def ver_justificaciones():
-    registros = JustificacionNoVenta.query.all()
+    """Muestra las justificaciones agrupadas por motivo."""
+    registros = {
+        motivo: JustificacionNoVenta.query.filter_by(motivo=motivo).all()
+        for motivo in MOTIVOS
+    }
     return render_template('justificaciones.html', registros=registros)
 
 @app.route('/contactos_hoy')

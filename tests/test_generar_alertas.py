@@ -51,3 +51,4 @@ def test_generar_alertas_compara_mes_pasado(client):
         assert alertas[0].tipo == "Cliente Cr\xf3nico"
         assert "Juan" in alertas[0].mensaje
         assert "necesita" in alertas[0].mensaje
+        
